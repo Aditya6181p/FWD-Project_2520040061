@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>About Us | Titan Manager</title>
+        <link rel="stylesheet" href="style.css" />
+        <style>
+            /* Updated Container to ensure vertical and horizontal centering */
+            .about-container {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 80vh; /* Increased height for better visual balance */
+                padding: 40px;
+            }
+
+            /* V-Card Style - Now 70% width */
+            .v-card {
+                background: white;
+                width: 70%; /* Covers 70% of the webpage */
+                min-height: 400px; /* Ensures the card has a significant presence */
+                border-radius: 20px;
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+                display: flex;
+                overflow: hidden;
+                border-left: 8px solid var(--success-green);
+                transition: transform 0.3s ease;
+            }
+
+            /* Larger left sidebar for the image */
+            .v-card-image {
+                background: var(--bg-azure);
+                width: 35%; /* Fixed ratio for the image section */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-right: 1px solid var(--slate-border);
+            }
+
+            .v-card-image img {
+                width: 60%; /* Scales relative to the larger sidebar */
+                height: auto;
+            }
+
+            /* Content details area */
+            .v-card-details {
+                padding: 50px; /* Increased padding for the larger layout */
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+
+            .v-card-details h2 {
+                margin: 0 0 25px 0;
+                color: var(--primary-dark);
+                font-size: 2.2rem; /* Larger Title */
+                border-bottom: 3px solid var(--bg-azure);
+                padding-bottom: 15px;
+            }
+
+            .detail-item {
+                margin-bottom: 20px;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .detail-label {
+                font-size: 0.9rem; /* Increased label size */
+                text-transform: uppercase;
+                color: #64748b;
+                font-weight: bold;
+                letter-spacing: 1.5px;
+            }
+
+            .detail-value {
+                font-size: 1.25rem; /* Larger text for the details */
+                color: var(--text-main);
+                font-weight: 500;
+                margin-top: 5px;
+            }
+
+            .email-link {
+                color: var(--accent-blue);
+                text-decoration: none;
+            }
+
+            .email-link:hover {
+                text-decoration: underline;
+            }
+
+            /* Responsive adjustment for mobile */
+            @media (max-width: 992px) {
+                .v-card {
+                    width: 90%;
+                    flex-direction: column;
+                }
+                .v-card-image {
+                    width: 100%;
+                    padding: 40px 0;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div class="logo-area">
+                <a href="AiPage.html">
+                    <img
+                        src="Sports.png"
+                        alt="Main"
+                        style="height: 40px; width: auto"
+                    />
+                </a>
+                <h1>TITAN MANAGER</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="AiPage.html">Home</a></li>
+                    <li><a href="Events.html">Events</a></li>
+                    <li><a href="About.html" style="color: white">More</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main class="about-container">
+            <div class="v-card">
+                <div class="v-card-image">
+                    <img src="Sports.png" alt="Developer Logo" />
+                </div>
+
+                <div class="v-card-details">
+                    <h2>Developer Profile</h2>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Name</span>
+                        <span class="detail-value">Aditya Putta</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Roll No</span>
+                        <span class="detail-value">2520040061</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Section & Branch</span>
+                        <span class="detail-value">Sec-8, ECE</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Email</span>
+                        <span class="detail-value">
+                            <a
+                                href="mailto:putta.sriaditya@gmail.com"
+                                class="email-link"
+                                >putta.sriaditya@gmail.com</a
+                            >
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | Titan Manager</title>
+    <link rel="stylesheet" href="login.css">
+    <style>
+        /* Small adjustment for more fields */
+        .login-container { max-width: 450px; margin: 30px auto; }
+        .name-row { display: flex; gap: 10px; }
+        .name-row .form-group { flex: 1; }
+    </style>
+</head>
+<body>
+<div class="login-container">
+    <div class="login-header">
+        <img src="Sports.png" alt="Logo" style="height: 60px;">
+        <h1>Titan Manager</h1>
+        <h2>Join Us!</h2>
+    </div>
+
+    <form id="signupForm">
+        <div class="name-row">
+            <div class="form-group">
+                <label for="firstName">First Name</label>
+                <input type="text" id="firstName" name="firstName" required placeholder="John">
+            </div>
+            <div class="form-group">
+                <label for="lastName">Last Name</label>
+                <input type="text" id="lastName" name="lastName" required placeholder="Doe">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="mobile">Mobile Number</label>
+            <input type="tel" id="mobile" name="mobile" required placeholder="Enter mobile number">
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" required placeholder="example@mail.com">
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required placeholder="Create a password">
+        </div>
+
+        <button type="submit" class="login-button">Create Account</button>
+    </form>
+
+    <div class="divider"><span>or</span></div>
+    <a href="Login.html" style="text-decoration: none;">
+        <button type="button" class="signup-button">Already have an account? Sign In</button>
+    </a>
+</div>
+
+<script>
+    document.getElementById('signupForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const formData = {
+            firstName: document.getElementById('firstName').value,
+            lastName: document.getElementById('lastName').value,
+            mobile: document.getElementById('mobile').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value
+        };
+
+        try {
+            // Sending data to your Node.js server (see Step 2)
+            const response = await fetch('http://localhost:3000/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            if (response.ok) {
+                alert("Account created successfully!");
+                window.location.href = "Login.html";
+            } else {
+                alert("Error: Email might already be registered.");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Could not connect to the server. Make sure your Node.js backend is running.");
+        }
+    });
+</script>
+</body>
+</html>

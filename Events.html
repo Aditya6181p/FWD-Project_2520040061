@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Match Schedule | Titan Manager</title>
+        <style>
+            :root {
+                --slate: #1e293b;
+                --azure: #f0f9ff;
+                --emerald: #10b981;
+                --accent: #3b82f6;
+            }
+            body {
+                margin: 0;
+                font-family: "Segoe UI", sans-serif;
+                background-color: var(--azure);
+                color: var(--slate);
+            }
+
+            header {
+                background: var(--slate);
+                color: white;
+                padding: 1rem 2rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+            }
+
+            /* Search and Filter Section */
+            .controls-section {
+                background: white;
+                padding: 15px 20px;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 20px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                position: sticky;
+                top: 60px;
+                z-index: 99;
+            }
+            .search-box {
+                padding: 8px 15px;
+                border-radius: 6px;
+                border: 1px solid #cbd5e1;
+                width: 250px;
+                outline-color: var(--accent);
+            }
+            select {
+                padding: 8px 15px;
+                border-radius: 6px;
+                border: 1px solid #cbd5e1;
+                cursor: pointer;
+            }
+
+            .main-content {
+                max-width: 850px;
+                margin: 20px auto;
+                padding: 10px;
+                height: 70vh;
+                overflow-y: auto;
+                border-radius: 8px;
+            }
+
+            .date-header {
+                background: #e2e8f0;
+                padding: 10px 20px;
+                margin: 20px 0 10px 0;
+                border-radius: 8px;
+                font-weight: bold;
+                position: sticky;
+                top: 0;
+                z-index: 10;
+            }
+
+            .event-card {
+                background: white;
+                border-radius: 12px;
+                padding: 20px;
+                margin-bottom: 12px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                transition: 0.2s;
+            }
+            .event-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+
+            /* Sport Pill Styling */
+            .sport-pill {
+                background: #dbeafe;
+                color: #1e40af;
+                padding: 3px 10px;
+                border-radius: 20px;
+                font-size: 0.7rem;
+                font-weight: bold;
+                text-transform: uppercase;
+                display: inline-block;
+                margin: 5px 0;
+            }
+
+            .team-box {
+                flex: 1;
+                text-align: center;
+                font-weight: 600;
+                font-size: 1.1rem;
+            }
+            .vs-badge {
+                background: #f1f5f9;
+                padding: 5px 12px;
+                border-radius: 8px;
+                font-size: 0.8rem;
+                color: #64748b;
+                margin: 0 20px;
+                font-weight: bold;
+            }
+            .event-id {
+                font-size: 0.75rem;
+                color: #94a3b8;
+                display: block;
+                font-family: monospace;
+            }
+            .time-label {
+                font-size: 0.95rem;
+                color: var(--emerald);
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h2 style="margin: 0; color: var(--emerald)">Titan Schedule</h2>
+            <nav>
+                <a
+                    href="AiPage.html"
+                    style="color: white; text-decoration: none"
+                    >Back to Home</a
+                >
+            </nav>
+        </header>
+
+        <div class="controls-section">
+            <input
+                type="text"
+                id="searchInput"
+                class="search-box"
+                placeholder="Search Team or ID..."
+                onkeyup="applyFilters()"
+            />
+
+            <select id="sportFilter" onchange="applyFilters()">
+                <option value="All">All Sports</option>
+                <option value="Basketball">Basketball</option>
+                <option value="Football">Football</option>
+                <option value="Badminton">Badminton</option>
+                <option value="TableTennis">Table Tennis</option>
+            </select>
+        </div>
+
+        <div class="main-content" id="scrollContainer">
+            <div id="eventDisplay"></div>
+        </div>
+
+        <script>
+            let allMatches = []; // Global storage for local filtering
+
+            async function fetchMatches() {
+                try {
+                    const response = await fetch(
+                        "http://localhost:3000/get-events",
+                    );
+                    allMatches = await response.json();
+                    renderMatches(allMatches);
+                } catch (err) {
+                    console.error("Fetch Error:", err);
+                    document.getElementById("eventDisplay").innerHTML =
+                        "<p style='text-align:center; color:red;'>Server Error: Ensure Node.js is running.</p>";
+                }
+            }
+
+            function applyFilters() {
+                const searchTerm = document
+                    .getElementById("searchInput")
+                    .value.toLowerCase();
+                const selectedSport =
+                    document.getElementById("sportFilter").value;
+
+                const filtered = allMatches.filter((match) => {
+                    const matchesSport =
+                        selectedSport === "All" ||
+                        match.sport === selectedSport;
+                    const matchesSearch =
+                        match.teamA.toLowerCase().includes(searchTerm) ||
+                        match.teamB.toLowerCase().includes(searchTerm) ||
+                        match.eventId.toLowerCase().includes(searchTerm);
+
+                    return matchesSport && matchesSearch;
+                });
+
+                renderMatches(filtered);
+            }
+
+            function renderMatches(matches) {
+                const display = document.getElementById("eventDisplay");
+                display.innerHTML = "";
+                let lastDate = "";
+
+                if (matches.length === 0) {
+                    display.innerHTML =
+                        "<p style='text-align:center; padding-top:50px; color:#64748b;'>No matches found.</p>";
+                    return;
+                }
+
+                matches.forEach((match) => {
+                    const dateObj = new Date(match.matchDateTime);
+                    const dateString = dateObj.toLocaleDateString("en-US", {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                    });
+                    const timeString = dateObj.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    });
+
+                    // Date Header Logic
+                    if (dateString !== lastDate) {
+                        const header = document.createElement("div");
+                        header.className = "date-header";
+                        header.innerText = dateString;
+                        display.appendChild(header);
+                        lastDate = dateString;
+                    }
+
+                    // Match Card Creation
+                    const card = document.createElement("div");
+                    card.className = "event-card";
+                    card.innerHTML = `
+                        <div style="width: 120px; border-right: 1px solid #f1f5f9;">
+                            <span class="event-id">${match.eventId}</span>
+                            <span class="sport-pill">${match.sport || "General"}</span>
+                            <span class="time-label">${timeString}</span>
+                        </div>
+                        <div class="team-box">${match.teamA}</div>
+                        <div class="vs-badge">VS</div>
+                        <div class="team-box">${match.teamB}</div>
+                    `;
+                    display.appendChild(card);
+                });
+            }
+
+            window.onload = fetchMatches;
+        </script>
+    </body>
+</html>

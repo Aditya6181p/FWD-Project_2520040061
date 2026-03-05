@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Football Hub | Titan Manager</title>
+        <style>
+            :root {
+                --slate: #1e293b;
+                --azure: #f0f9ff;
+                --emerald: #10b981;
+                --pitch-green: #15803d; /* Football theme */
+                --gold: #f59e0b;
+            }
+            body {
+                margin: 0;
+                font-family: "Segoe UI", sans-serif;
+                background-color: var(--azure);
+                color: var(--slate);
+            }
+
+            /* --- HEADER --- */
+            header {
+                background-color: var(--slate);
+                color: white;
+                padding: 15px 40px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .logo-section {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            header h1 {
+                margin: 0;
+                font-size: 24px;
+                color: var(--emerald);
+            }
+            nav ul {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                gap: 25px;
+            }
+            nav a {
+                text-decoration: none;
+                color: #cbd5e1;
+                font-weight: 600;
+            }
+            nav a.active {
+                color: white;
+            }
+
+            /* --- HERO --- */
+            .hero {
+                background: var(--slate);
+                color: white;
+                padding: 40px 20px;
+                text-align: center;
+                border-bottom: 5px solid var(--pitch-green);
+            }
+
+            .container {
+                max-width: 950px;
+                margin: 30px auto;
+                padding: 0 20px;
+            }
+
+            .guidelines {
+                background: white;
+                padding: 15px 20px;
+                border-radius: 12px;
+                margin-bottom: 25px;
+                border-left: 6px solid var(--pitch-green);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            }
+
+            /* --- MATCH CARDS --- */
+            .match-card {
+                background: white;
+                border-radius: 12px;
+                padding: 20px;
+                margin-bottom: 20px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                display: grid;
+                grid-template-columns: 1.5fr 3fr 1.2fr;
+                align-items: center;
+                border-left: 6px solid var(--pitch-green);
+                transition: transform 0.2s;
+            }
+
+            .final-match {
+                border: 2px solid var(--gold) !important;
+                background: #fffdf0;
+                transform: scale(1.02);
+                border-left: 8px solid var(--gold) !important;
+            }
+
+            .match-level-tag {
+                display: inline-block;
+                background: var(--slate);
+                color: white;
+                padding: 3px 10px;
+                border-radius: 4px;
+                font-size: 10px;
+                font-weight: bold;
+                margin-bottom: 8px;
+            }
+
+            .score-display {
+                font-size: 28px;
+                font-weight: 800;
+                color: var(--slate);
+                margin: 0 15px;
+            }
+
+            .status-pill {
+                padding: 4px 10px;
+                border-radius: 20px;
+                font-size: 11px;
+                text-transform: uppercase;
+                font-weight: bold;
+            }
+            .status-Upcoming {
+                background: #dcfce7;
+                color: #166534;
+            }
+            .status-Completed {
+                background: #f1f5f9;
+                color: #475569;
+            }
+
+            /* --- EDIT PANEL --- */
+            .edit-panel {
+                background: #f8fafc;
+                border: 1px dashed #cbd5e1;
+                padding: 20px;
+                border-radius: 8px;
+                margin-top: 15px;
+                display: none;
+                grid-column: span 3;
+            }
+
+            .btn-edit {
+                background: var(--slate);
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 6px;
+                cursor: pointer;
+            }
+            .btn-save {
+                background: var(--pitch-green);
+                color: white;
+                border: none;
+                padding: 12px;
+                border-radius: 6px;
+                cursor: pointer;
+                width: 100%;
+                font-weight: bold;
+                margin-top: 15px;
+            }
+
+            input[type="number"],
+            input[type="datetime-local"] {
+                padding: 10px;
+                border: 1px solid #cbd5e1;
+                border-radius: 6px;
+                margin: 5px 0;
+                text-align: center;
+            }
+            .input-group {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                margin: 15px 0;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div class="logo-section">
+                <a href="AiPage.html"
+                    ><img src="Sports.png" alt="Logo" style="height: 40px"
+                /></a>
+                <h1>Titan Manager</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="AiPage.html">Home</a></li>
+                    <li><a href="Events.html">Events</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <section class="hero">
+            <h2>Football Hub</h2>
+            <p>Stadium Management & Tournament Progression</p>
+        </section>
+
+        <main class="container">
+            <div class="guidelines">
+                <h3 style="margin-top: 0">Tournament Rules</h3>
+                <p>
+                    ⚽ <strong>Progression:</strong> Winners advance to the next
+                    level. If scores are level at full time, enter the final
+                    score including penalties.
+                </p>
+                <p>
+                    🕒 <strong>Schedule:</strong> Use the manager tool to set
+                    kickoff dates and times.
+                </p>
+            </div>
+
+            <div id="footballMatchList"></div>
+        </main>
+
+        <script>
+            // Endpoint specific to Football
+            const API_GET = "http://localhost:3000/get-football-events";
+            const API_UPDATE = "http://localhost:3000/update-match-complex";
+
+            async function loadFootballMatches() {
+                try {
+                    const response = await fetch(API_GET);
+                    const matches = await response.json();
+                    const container =
+                        document.getElementById("footballMatchList");
+                    container.innerHTML = "";
+
+                    if (matches.length === 0) {
+                        container.innerHTML =
+                            "<p style='text-align:center; color:#94a3b8;'>No matches found for this category.</p>";
+                        return;
+                    }
+
+                    matches.forEach((m) => {
+                        const isFinal = m.matchLevel === 1;
+                        const card = document.createElement("div");
+                        card.className = `match-card ${isFinal ? "final-match" : ""}`;
+
+                        const dtValue = m.matchDateTime
+                            ? new Date(m.matchDateTime)
+                                  .toISOString()
+                                  .slice(0, 16)
+                            : "";
+                        const displayDate = m.matchDateTime
+                            ? new Date(m.matchDateTime).toLocaleString([], {
+                                  dateStyle: "medium",
+                                  timeStyle: "short",
+                              })
+                            : "Kickoff TBD";
+
+                        card.innerHTML = `
+                            <div>
+                                <span class="match-level-tag">${getLevelLabel(m.matchLevel)}</span><br>
+                                <span class="status-pill status-${m.status}">${m.status}</span><br>
+                                <small style="color:#94a3b8">Event ID: ${m.eventId}</small>
+                            </div>
+
+                            <div style="text-align:center">
+                                <div style="font-size:12px; color:#64748b; margin-bottom:5px">🏟️ ${displayDate}</div>
+                                <div style="display:flex; justify-content:center; align-items:center;">
+                                    <span style="font-weight:700; width:140px; text-align:right">${m.teamA || "Qualified Team"}</span>
+                                    <span class="score-display">${m.scoreA} - ${m.scoreB}</span>
+                                    <span style="font-weight:700; width:140px; text-align:left">${m.teamB || "Qualified Team"}</span>
+                                </div>
+                                ${m.winner ? `<div style="color:var(--pitch-green); font-weight:bold; margin-top:10px">${isFinal ? "🏆 TOURNAMENT CHAMPIONS:" : "Winner:"} ${m.winner}</div>` : ""}
+                            </div>
+
+                            <div style="text-align:right">
+                                <button class="btn-edit" onclick="toggleEdit(${m.id})">Update</button>
+                            </div>
+
+                            <div id="edit-${m.id}" class="edit-panel">
+                                <h4 style="margin:0 0 10px 0">Match Management</h4>
+
+                                <label style="font-size:12px; font-weight:bold">Update Kickoff Time:</label><br>
+                                <input type="datetime-local" id="dt-${m.id}" value="${dtValue}" style="width:100%; margin-bottom:15px">
+
+                                <label style="font-size:12px; font-weight:bold">Final Score (Full-Time/Penalties):</label>
+                                <div class="input-group">
+                                    <span>${m.teamA || "Team A"}</span>
+                                    <input type="number" id="scA-${m.id}" value="${m.scoreA}" min="0">
+                                    <span>-</span>
+                                    <input type="number" id="scB-${m.id}" value="${m.scoreB}" min="0">
+                                    <span>${m.teamB || "Team B"}</span>
+                                </div>
+
+                                <button class="btn-save" onclick="saveMatch(${m.id}, '${m.teamA}', '${m.teamB}')">
+                                    Update Result & Promote
+                                </button>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    });
+                } catch (err) {
+                    console.error("Load Error:", err);
+                }
+            }
+
+            function getLevelLabel(level) {
+                if (level === 1) return "🏆 THE FINAL";
+                if (level === 2) return "SEMI-FINALS";
+                if (level === 4) return "QUARTER-FINALS";
+                return `ROUND OF ${level * 2}`;
+            }
+
+            function toggleEdit(id) {
+                const panel = document.getElementById(`edit-${id}`);
+                panel.style.display =
+                    panel.style.display === "block" ? "none" : "block";
+            }
+
+            async function saveMatch(id, teamA, teamB) {
+                const sA = parseInt(document.getElementById(`scA-${id}`).value);
+                const sB = parseInt(document.getElementById(`scB-${id}`).value);
+                const dateTime = document.getElementById(`dt-${id}`).value;
+
+                // Tournament matches require a winner for promotion
+                if (sA === sB) {
+                    alert(
+                        "Knockout matches must have a winner. If the game ended in a draw, please enter the final score including penalty shootouts.",
+                    );
+                    return;
+                }
+
+                const winner = sA > sB ? teamA : teamB;
+
+                const response = await fetch(API_UPDATE, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        id: id,
+                        scoreA: sA,
+                        scoreB: sB,
+                        winner: winner,
+                        status: "Completed",
+                        matchDateTime: dateTime,
+                    }),
+                });
+
+                if (response.ok) {
+                    alert(
+                        "Football match updated. Tournament tree has been adjusted!",
+                    );
+                    loadFootballMatches();
+                }
+            }
+
+            window.onload = loadFootballMatches;
+        </script>
+    </body>
+</html>

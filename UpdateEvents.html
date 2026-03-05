@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Update Events | Titan Manager</title>
+        <link rel="stylesheet" href="style.css" />
+        <style>
+            .form-container {
+                max-width: 800px;
+                margin: 50px auto;
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .form-group {
+                margin-bottom: 20px;
+            }
+            label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: bold;
+            }
+            input,
+            select {
+                width: 100%;
+                padding: 10px;
+                border: 1px solid var(--slate-border);
+                border-radius: 5px;
+                margin-bottom: 10px;
+            }
+            .team-input-section {
+                margin-top: 15px;
+                padding: 15px;
+                background: var(--bg-azure);
+                border-radius: 8px;
+                border-left: 4px solid var(--accent-blue);
+            }
+
+            /* Bracket Visualization Styles */
+            .bracket-container {
+                margin-top: 40px;
+                overflow-x: auto;
+                padding: 20px;
+                background: #f8fafc;
+                border-radius: 12px;
+                display: none;
+            }
+            .bracket-tree {
+                display: flex;
+                gap: 40px;
+                align-items: center;
+                justify-content: center;
+            }
+            .round {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-around;
+                gap: 20px;
+            }
+            .match {
+                background: white;
+                border: 1px solid var(--slate-border);
+                padding: 10px;
+                border-radius: 5px;
+                width: 150px;
+                text-align: center;
+                font-size: 0.8rem;
+                box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.05);
+            }
+            .connector {
+                height: 2px;
+                background: var(--slate-light);
+                flex-grow: 1;
+            }
+            /* Style for the date display in the match card */
+            .match-time {
+                display: block;
+                font-size: 0.7rem;
+                color: #64748b;
+                margin-top: 5px;
+                border-top: 1px solid #f1f5f9;
+                padding-top: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div class="logo-section">
+                <a href="AiPage.html"
+                    ><img src="Sports.png" alt="Logo" style="height: 40px"
+                /></a>
+                <h1>Titan Manager</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="AiPage.html">Home</a></li>
+                    <li><a href="Events.html">Events</a></li>
+                    <li>
+                        <a href="UpdateEvents.html" class="active">Update</a>
+                    </li>
+                    <li><a href="About.html">More</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main class="form-container">
+            <h2>Create Tournament Bracket</h2>
+            <form id="eventForm">
+                <div
+                    class="grid"
+                    style="
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 15px;
+                        margin: 0;
+                        padding: 0;
+                    "
+                >
+                    <div class="form-group">
+                        <label>Event ID</label>
+                        <input type="text" id="eventId" readonly />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Event Date & Time</label>
+                        <input
+                            type="datetime-local"
+                            id="eventDateTime"
+                            required
+                        />
+                    </div>
+                </div>
+
+                <div
+                    class="grid"
+                    style="
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 15px;
+                        margin: 0;
+                        padding: 0;
+                    "
+                >
+                    <div class="form-group">
+                        <label>Select Sport</label>
+                        <select
+                            id="sportSelect"
+                            onchange="generateTeamInputs()"
+                        >
+                            <option value="">-- Select Sport --</option>
+                            <option value="Basketball">
+                                Basketball (5 Players)
+                            </option>
+                            <option value="Football">
+                                Football (11 Players)
+                            </option>
+                            <option value="Badminton">
+                                Badminton (2 Players)
+                            </option>
+                            <option value="TableTennis">
+                                Table Tennis (2 Players)
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Number of Teams</label>
+                        <select id="teamCount" onchange="generateTeamInputs()">
+                            <option value="2">2 (Finals Only)</option>
+                            <option value="4">4 (Semi-Finals)</option>
+                            <option value="8">8 (Quarter-Finals)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="dynamicTeams"></div>
+
+                <button type="submit" class="cta-button" style="width: 100%">
+                    Generate Bracket & Save
+                </button>
+            </form>
+
+            <div id="bracketVisual" class="bracket-container">
+                <h3 style="text-align: center">Tournament Tree Map</h3>
+                <div id="bracketTree" class="bracket-tree"></div>
+            </div>
+        </main>
+
+        <script>
+            // 1. Generate Unique ID on Page Load
+            function generateId() {
+                const chars = "TM";
+                const digits = Math.floor(100000 + Math.random() * 900000);
+                document.getElementById("eventId").value = chars + digits;
+            }
+
+            // 2. Generate Input fields based on Sport and Number of Teams
+            function generateTeamInputs() {
+                const sport = document.getElementById("sportSelect").value;
+                const numTeams = parseInt(
+                    document.getElementById("teamCount").value,
+                );
+                const container = document.getElementById("dynamicTeams");
+                container.innerHTML = "";
+
+                let playersPerTeam =
+                    sport === "Basketball" ? 5 : sport === "Football" ? 11 : 2;
+
+                if (sport && numTeams) {
+                    for (let t = 1; t <= numTeams; t++) {
+                        let teamHtml = `
+                        <div class="team-input-section">
+                            <label>Team ${t} Name</label>
+                            <input type="text" class="team-name" placeholder="Enter Team ${t} Name" required>
+                        </div>`;
+                        container.innerHTML += teamHtml;
+                    }
+                }
+            }
+
+            // 3. Handle Form Submission (Save to DB & Show Bracket)
+            document
+                .getElementById("eventForm")
+                .addEventListener("submit", async function (e) {
+                    e.preventDefault();
+
+                    const eventId = document.getElementById("eventId").value;
+                    const eventDateTime =
+                        document.getElementById("eventDateTime").value;
+                    const sport = document.getElementById("sportSelect").value;
+                    const teamNames = Array.from(
+                        document.querySelectorAll(".team-name"),
+                    ).map((input) => input.value);
+
+                    // Prepare data for Database
+                    let matchesData = [];
+                    for (let i = 0; i < teamNames.length; i += 2) {
+                        matchesData.push({
+                            matchNum: i / 2 + 1,
+                            teamA: teamNames[i],
+                            teamB: teamNames[i + 1] || "TBD",
+                            date: eventDateTime,
+                        });
+                    }
+
+                    // SEND TO SERVER
+                    try {
+                        const response = await fetch(
+                            "http://localhost:3000/save-tournament",
+                            {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    eventId,
+                                    sport,
+                                    matches: matchesData,
+                                }),
+                            },
+                        );
+
+                        if (response.ok) {
+                            alert(
+                                "Success! Tournament " +
+                                    eventId +
+                                    " saved to database.",
+                            );
+                            renderBracket(teamNames, eventDateTime); // Show the tree map
+                        } else {
+                            alert("Server error: Could not save tournament.");
+                        }
+                    } catch (error) {
+                        alert(
+                            "Connection Error: Is your Node.js server running?",
+                        );
+                    }
+                });
+
+            // 4. Visual Bracket Logic
+            function renderBracket(teams, dateTime) {
+                const bracketTree = document.getElementById("bracketTree");
+                const visualSection = document.getElementById("bracketVisual");
+                const formattedDate = new Date(dateTime).toLocaleString();
+
+                bracketTree.innerHTML = "";
+                visualSection.style.display = "block";
+
+                let rounds =
+                    teams.length === 8
+                        ? ["Quarter-Finals", "Semi-Finals", "Finals"]
+                        : teams.length === 4
+                          ? ["Semi-Finals", "Finals"]
+                          : ["Finals"];
+
+                let currentTeams = [...teams];
+
+                rounds.forEach((roundName) => {
+                    const roundDiv = document.createElement("div");
+                    roundDiv.className = "round";
+                    roundDiv.innerHTML = `<h4 style="font-size:0.7rem; color:var(--accent-blue)">${roundName}</h4>`;
+
+                    const numMatches = currentTeams.length / 2;
+                    const nextRound = [];
+
+                    for (let i = 0; i < numMatches; i++) {
+                        const matchDiv = document.createElement("div");
+                        matchDiv.className = "match";
+                        matchDiv.innerHTML = `
+                        <strong>${currentTeams[i * 2] || "TBD"}</strong><br>vs<br>
+                        <strong>${currentTeams[i * 2 + 1] || "TBD"}</strong>
+                        <span class="match-time">${formattedDate}</span>`;
+                        roundDiv.appendChild(matchDiv);
+                        nextRound.push("Winner");
+                    }
+                    bracketTree.appendChild(roundDiv);
+                    currentTeams = nextRound;
+                });
+            }
+
+            window.onload = generateId;
+        </script>
+    </body>
+</html>

@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Tournament Manager | Titan Manager</title>
+        <style>
+            :root {
+                --slate: #1e293b;
+                --azure: #f0f9ff;
+                --emerald: #10b981;
+                --gold: #f59e0b;
+                --danger: #ef4444;
+            }
+            body {
+                margin: 0;
+                font-family: "Segoe UI", sans-serif;
+                background-color: var(--azure);
+                color: var(--slate);
+            }
+
+            /* --- HEADER --- */
+            header {
+                background-color: var(--slate);
+                color: white;
+                padding: 15px 40px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .logo-section {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            header h1 {
+                margin: 0;
+                font-size: 24px;
+                color: var(--emerald);
+            }
+            nav ul {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                gap: 25px;
+            }
+            nav a {
+                text-decoration: none;
+                color: #cbd5e1;
+                font-weight: 600;
+            }
+
+            /* --- HERO --- */
+            .hero {
+                background: var(--slate);
+                color: white;
+                padding: 40px 20px;
+                text-align: center;
+                border-bottom: 5px solid var(--emerald);
+            }
+
+            .container {
+                max-width: 950px;
+                margin: 30px auto;
+                padding: 0 20px;
+            }
+
+            /* --- MATCH CARDS & PROGRESSION --- */
+            .match-card {
+                background: white;
+                border-radius: 12px;
+                padding: 20px;
+                margin-bottom: 20px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+                display: grid;
+                grid-template-columns: 1.5fr 3fr 1fr;
+                align-items: center;
+                transition: transform 0.2s;
+                position: relative;
+                border-left: 6px solid #cbd5e1;
+            }
+
+            /* Highlight Final Match */
+            .final-match {
+                border: 2px solid var(--gold) !important;
+                background: #fffdf0;
+                transform: scale(1.02);
+                border-left: 8px solid var(--gold) !important;
+            }
+
+            .match-level-tag {
+                display: inline-block;
+                background: var(--slate);
+                color: white;
+                padding: 3px 10px;
+                border-radius: 4px;
+                font-size: 11px;
+                font-weight: bold;
+                margin-bottom: 8px;
+            }
+
+            .score-display {
+                font-size: 28px;
+                font-weight: 800;
+                color: var(--slate);
+                margin: 0 15px;
+            }
+
+            .status-pill {
+                padding: 4px 10px;
+                border-radius: 20px;
+                font-size: 11px;
+                text-transform: uppercase;
+                font-weight: bold;
+            }
+            .status-Upcoming {
+                background: #e0f2fe;
+                color: #0369a1;
+            }
+            .status-Completed {
+                background: #dcfce7;
+                color: #166534;
+            }
+
+            /* --- EDIT PANEL --- */
+            .edit-panel {
+                background: #f8fafc;
+                border: 1px dashed #cbd5e1;
+                padding: 20px;
+                border-radius: 8px;
+                margin-top: 15px;
+                display: none;
+                grid-column: span 3;
+            }
+
+            .btn-edit {
+                background: var(--slate);
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 6px;
+                cursor: pointer;
+            }
+            .btn-save {
+                background: var(--emerald);
+                color: white;
+                border: none;
+                padding: 12px;
+                border-radius: 6px;
+                cursor: pointer;
+                width: 100%;
+                font-weight: bold;
+                margin-top: 15px;
+            }
+
+            input[type="number"],
+            input[type="datetime-local"] {
+                padding: 10px;
+                border: 1px solid #cbd5e1;
+                border-radius: 6px;
+                margin: 5px 0;
+            }
+            .input-group {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                margin: 15px 0;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div class="logo-section">
+                <a href="AiPage.html"
+                    ><img src="Sports.png" alt="Logo" style="height: 40px"
+                /></a>
+                <h1>Titan Manager</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="AiPage.html">Home</a></li>
+                    <li><a href="Events.html">Events</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <section class="hero">
+            <h2 id="hubTitle">Tournament Hub</h2>
+            <p>Track progression from Qualifiers to Finals</p>
+        </section>
+
+        <main class="container">
+            <div id="matchContainer"></div>
+        </main>
+
+        <script>
+            // CONFIGURATION: Change these per page
+            const SPORT_NAME = "Table Tennis"; // e.g., "Football", "Badminton"
+            const FETCH_ENDPOINT = "http://localhost:3000/get-tt-events";
+            const UPDATE_ENDPOINT =
+                "http://localhost:3000/update-match-complex";
+
+            document.getElementById("hubTitle").innerText = `${SPORT_NAME} Hub`;
+
+            async function loadMatches() {
+                try {
+                    const response = await fetch(FETCH_ENDPOINT);
+                    const matches = await response.json();
+                    const container = document.getElementById("matchContainer");
+                    container.innerHTML = "";
+
+                    if (matches.length === 0) {
+                        container.innerHTML =
+                            "<p style='text-align:center;'>No matches found for this tournament.</p>";
+                        return;
+                    }
+
+                    matches.forEach((m) => {
+                        const isFinal = m.matchLevel === 1;
+                        const card = document.createElement("div");
+                        card.className = `match-card ${isFinal ? "final-match" : ""}`;
+
+                        // Format Date for Input Value (YYYY-MM-DDTHH:MM)
+                        const dtValue = m.matchDateTime
+                            ? new Date(m.matchDateTime)
+                                  .toISOString()
+                                  .slice(0, 16)
+                            : "";
+                        const displayDate = m.matchDateTime
+                            ? new Date(m.matchDateTime).toLocaleString([], {
+                                  dateStyle: "medium",
+                                  timeStyle: "short",
+                              })
+                            : "Not Scheduled";
+
+                        card.innerHTML = `
+                            <div>
+                                <span class="match-level-tag">${getLevelName(m.matchLevel)}</span><br>
+                                <span class="status-pill status-${m.status}">${m.status}</span><br>
+                                <small style="color:#94a3b8">Event ID: ${m.eventId}</small>
+                            </div>
+
+                            <div style="text-align:center">
+                                <div style="font-size:12px; color:#64748b; margin-bottom:8px">📅 ${displayDate}</div>
+                                <div style="display:flex; justify-content:center; align-items:center;">
+                                    <span style="font-weight:700; width:120px; text-align:right">${m.teamA || "TBD"}</span>
+                                    <span class="score-display">${m.scoreA} - ${m.scoreB}</span>
+                                    <span style="font-weight:700; width:120px; text-align:left">${m.teamB || "TBD"}</span>
+                                </div>
+                                ${m.winner ? `<div style="color:var(--emerald); font-weight:bold; margin-top:10px">${isFinal ? "🏆 CHAMPION:" : "Winner:"} ${m.winner}</div>` : ""}
+                            </div>
+
+                            <div style="text-align:right">
+                                <button class="btn-edit" onclick="toggleEdit(${m.id})">Update</button>
+                            </div>
+
+                            <div id="edit-${m.id}" class="edit-panel">
+                                <h4 style="margin:0 0 10px 0">Update Match Details</h4>
+
+                                <label style="font-size:12px; font-weight:bold">Schedule Date/Time:</label><br>
+                                <input type="datetime-local" id="dt-${m.id}" value="${dtValue}" style="width:100%; margin-bottom:15px">
+
+                                <label style="font-size:12px; font-weight:bold">Set Final Score:</label>
+                                <div class="input-group">
+                                    <span>${m.teamA || "TBD"}</span>
+                                    <input type="number" id="scA-${m.id}" value="${m.scoreA}" min="0">
+                                    <span>VS</span>
+                                    <input type="number" id="scB-${m.id}" value="${m.scoreB}" min="0">
+                                    <span>${m.teamB || "TBD"}</span>
+                                </div>
+
+                                <button class="btn-save" onclick="processUpdate(${m.id}, '${m.teamA}', '${m.teamB}')">
+                                    Save & Promote Winner
+                                </button>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    });
+                } catch (err) {
+                    console.error("Load Error:", err);
+                }
+            }
+
+            function getLevelName(level) {
+                if (level === 1) return "🏆 FINALS";
+                if (level === 2) return "SEMI-FINALS";
+                if (level === 4) return "QUARTER-FINALS";
+                return `ROUND OF ${level * 2}`;
+            }
+
+            function toggleEdit(id) {
+                const panel = document.getElementById(`edit-${id}`);
+                panel.style.display =
+                    panel.style.display === "block" ? "none" : "block";
+            }
+
+            async function processUpdate(id, teamA, teamB) {
+                const scoreA = parseInt(
+                    document.getElementById(`scA-${id}`).value,
+                );
+                const scoreB = parseInt(
+                    document.getElementById(`scB-${id}`).value,
+                );
+                const dateTime = document.getElementById(`dt-${id}`).value;
+
+                if (scoreA === scoreB) {
+                    alert(
+                        "Tournament matches must have a winner. Please enter final scores.",
+                    );
+                    return;
+                }
+
+                const winnerName = scoreA > scoreB ? teamA : teamB;
+
+                const response = await fetch(UPDATE_ENDPOINT, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        id: id,
+                        scoreA: scoreA,
+                        scoreB: scoreB,
+                        winner: winnerName,
+                        status: "Completed",
+                        matchDateTime: dateTime,
+                    }),
+                });
+
+                if (response.ok) {
+                    alert(
+                        "Match updated. Winners are automatically checked for next round promotion!",
+                    );
+                    loadMatches();
+                }
+            }
+
+            window.onload = loadMatches;
+        </script>
+    </body>
+</html>
